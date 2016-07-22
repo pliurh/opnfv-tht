@@ -648,6 +648,21 @@ MYSQL_HOST=localhost\n",
     exec { 'heat-sync-db-sleep':
       command => "sleep 5",
       path => "/usr/bin:/bin",
+    }->
+    class { '::congress::db::mysql': } ->
+    exec { 'congress-sync-db-sleep':
+      command => "sleep 5",
+      path    => "/usr/bin:/bin",
+    }
+
+    if hiera('enable_tacker') {
+      class { '::tacker::db::mysql':
+        require => Exec['congress-sync-db-sleep'],
+      }->
+      exec { 'tacker-sync-db-sleep':
+        command => "sleep 5",
+        path => "/usr/bin:/bin",
+      }
     }
 
     if downcase(hiera('ceilometer_backend')) == 'mysql' {
@@ -660,24 +675,7 @@ MYSQL_HOST=localhost\n",
         require => Class['::heat::db::mysql'],
       }
     }
-    if hiera('enable_congress') {
-      class { '::congress::db::mysql':
-        require => Exec['heat-sync-db-sleep']
-      }->
-      exec { 'congress-sync-db-sleep':
-        command => "sleep 5",
-        path => "/usr/bin:/bin",
-      }
-    }
-    if hiera('enable_tacker') {
-      class { '::tacker::db::mysql':
-        require => Class['::heat::db::mysql'],
-      }->
-      exec { 'tacker-sync-db-sleep':
-        command => "sleep 5",
-        path => "/usr/bin:/bin",
-      }
-    }
+
   }
 
   # pre-install swift here so we can build rings

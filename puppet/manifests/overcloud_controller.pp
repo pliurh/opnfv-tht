@@ -830,7 +830,6 @@ private_network_range: ${private_subnet}/${private_mask}"
   # Tacker
   if hiera('enable_tacker') {
     include ::tacker
-    include ::tacker::service
   }
   # Horizon
   if 'cisco_n1kv' in hiera('neutron::plugins::ml2::mechanism_drivers') {

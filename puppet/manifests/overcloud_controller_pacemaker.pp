@@ -1315,9 +1315,6 @@ private_network_range: ${private_subnet}/${private_mask}"
   if hiera('enable_tacker') {
     class { '::tacker':
       sync_db => $sync_db,
-    }
-
-    class { '::tacker::service':
       manage_service => false,
       enabled        => false,
     }

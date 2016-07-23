@@ -1311,6 +1311,29 @@ private_network_range: ${private_subnet}/${private_mask}"
   }
 
   if hiera('enable_tacker') {
+    $tacker_init_conf = '[Unit]
+Description=OpenStack Tacker Server
+After=syslog.target network.target
+[Service]
+Type=notify
+NotifyAccess=all
+TimeoutStartSec=0
+Restart=always
+User=root
+ExecStart=/etc/init.d/tacker-server start
+ExecStop=/etc/init.d/tacker-server stop
+[Install]
+WantedBy=multi-user.target'
+
+    file { '/usr/lib/systemd/system/openstack-tacker.service':
+      ensure  => file,
+      content => $tacker_init_conf,
+      mode    => '0644'
+    }->
+    exec { 'reload_systemd':
+      command => 'systemctl daemon-reload',
+      path    => '/usr/sbin:/usr/bin:/sbin:/bin',
+    }->
     class { '::tacker':
       sync_db => $sync_db,
       manage_service => false,
